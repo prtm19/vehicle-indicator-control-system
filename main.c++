@@ -1,7 +1,8 @@
 #define LEFT_BTN 3
 #define RIGHT_BTN 2
-#define LEFT_LED 5
-#define RIGHT_LED 4
+#define LEFT_LED 4
+#define RIGHT_LED 5
+#define BUZZER 6 // 🆕 Buzzer connected to D6
 
 bool left_on = false;
 bool right_on = false;
@@ -24,6 +25,7 @@ void setup()
     pinMode(RIGHT_BTN, INPUT_PULLUP);
     pinMode(LEFT_LED, OUTPUT);
     pinMode(RIGHT_LED, OUTPUT);
+    pinMode(BUZZER, OUTPUT); // 🆕 Buzzer as output
     Serial.begin(9600);
 }
 
@@ -91,7 +93,7 @@ void loop()
         rightHandled = false;
     }
 
-    // --- HAZARD MODE (Both Buttons) ---
+    // --- HAZARD MODE ---
     if (digitalRead(LEFT_BTN) == LOW && digitalRead(RIGHT_BTN) == LOW)
     {
         if (leftPressedTime != 0 && rightPressedTime != 0 &&
@@ -120,7 +122,7 @@ void loop()
         Serial.println("HAZARD_OFF");
     }
 
-    // --- LED BLINKING ---
+    // --- LED + BUZZER BLINKING ---
     if (currentTime - lastBlinkTime >= blinkInterval)
     {
         lastBlinkTime = currentTime;
@@ -130,11 +132,21 @@ void loop()
         {
             digitalWrite(LEFT_LED, ledState);
             digitalWrite(RIGHT_LED, ledState);
+            digitalWrite(BUZZER, ledState); // 🆕 Beep during hazard
         }
         else
         {
             digitalWrite(LEFT_LED, left_on ? ledState : LOW);
             digitalWrite(RIGHT_LED, right_on ? ledState : LOW);
+
+            if (left_on || right_on)
+            {
+                digitalWrite(BUZZER, ledState); // 🆕 Beep when indicators on
+            }
+            else
+            {
+                digitalWrite(BUZZER, LOW); // 🆕 OFF when nothing on
+            }
         }
     }
 }
